@@ -1,0 +1,8 @@
+so_long
+**/*.swp
+**/*.swo
+**/*.o
+**/*.a
+**/obj/
+.git
+.DS_Store
