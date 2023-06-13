@@ -1,4 +1,4 @@
-SRCSF =	operations.c node.c stack.c input.c pivot.c $(addprefix ops/, push.c rev_rotate.c rotate.c swap.c)
+SRCSF =	operations.c node.c stack.c parse.c pivot.c $(addprefix ops/, push.c rev_rotate.c rotate.c swap.c)
 
 OBJSF = $(patsubst %.c,%.o, $(SRCSF))
 

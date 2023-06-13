@@ -31,7 +31,7 @@ LIB-I = $(patsubst %,-I%,$(dir $(LIBS)))
 LIB-l = $(subst lib,-l,$(basename $(notdir $(LIBSF))))
 LIB-L = $(patsubst %,-L$(DIRLIB)%, $(dir $(LIBSF)))
 
-LIB-I += -I $(DIRLIB)push_swap/include
+LIB-I += -I $(DIRLIB)push_swap/include -I .lib/
 
 NAME = psvis
 CC = cc

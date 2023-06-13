@@ -6,7 +6,7 @@
 #include "sort.h"
 #include "texture.h"
 #include "program.h"
-#include "input.h"
+#include "push_swap/include/program.h"
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -44,6 +44,11 @@ int	update(t_program *program)
 {
 	t_texture tex_a;
 	t_texture tex_b;
+	
+	//char *next;
+	//next = get_next_line(0);
+	//ft_printf("%s", next);
+	//free(next);
 
 	tex_a = create_texture(program->mlx, program->width / 2, program->sort->a->count);
 	tex_b = create_texture(program->mlx, program->width / 2, program->sort->b->count);
@@ -62,17 +67,9 @@ int	main(int argc, char **argv)
 	prog.name = "PUSH SWAP VISUALISER";
 	prog.mlx = mlx_init();
 	prog.win = mlx_new_window(prog.mlx, prog.width, prog.height, prog.name);
-	prog.sort = parse_input(argc, argv);
-	
-	while(1)
-	{
-		char *next;
-		next = get_next_line(0);
-		if (next == NULL)
-			continue;
-		ft_printf("%s", next);
-		free(next);
-	}
-	mlx_loop_hook(prog.mlx, update, &prog);
+	prog.sort = ft_calloc(sizeof(t_sort*), 1);
+	parse(prog.sort, argc, argv);
+	mlx_loop(prog.mlx);	
+		mlx_loop_hook(prog.mlx, update, &prog);
 	return (0);
 }
