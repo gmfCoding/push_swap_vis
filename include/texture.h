@@ -13,10 +13,9 @@
 #ifndef TEXTURE_H
 # define TEXTURE_H
 
-#include "program.h"
-# include "vector.h"
+typedef struct s_texture t_texture;
 
-typedef struct s_texture
+struct s_texture
 {
 	void	*img;
 	char	*data;
@@ -25,7 +24,12 @@ typedef struct s_texture
 	int		bpp;
 	int		line_size;
 	int		endian;
-}				t_texture;
+};
+
+# include "program.h"
+# include "vector.h"
+
+
 
 void		pxput(t_texture data, int x, int y, int color);
 int			pxget(t_texture data, int x, int y);

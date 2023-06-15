@@ -1,8 +1,8 @@
-SRCSF =	main.c lst_readfd.c render_util.c vector.c vector_math.c vector_math_extra.c texture_util.c texture.c
+SRCSF =	main.c simulation.c lst_readfd.c render_util.c vector.c vector_math.c vector_math_extra.c texture_util.c texture.c
 
 OBJSF = $(patsubst %.c,%.o, $(SRCSF))
 
-LIBSF = libft/libft.a gnl/libgnl.a ftprintf/libftprintf.a push_swap/libpushswap.a
+LIBSF = push_swap/libpushswap.a libft/libft.a gnl/libgnl.a ftprintf/libftprintf.a 
 
 ifndef $(OS)
 OS := $(shell uname)
