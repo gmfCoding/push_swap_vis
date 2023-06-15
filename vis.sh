@@ -1,11 +1,21 @@
 EXEC=./push_swap
+VIEWERPATH=./psvisdata
+VIEWER=$VIEWERPATH/psvis
 
 MIN=-50
 MAX=50
 SIZE=100
 UNIQUE=1
 
-FOUND=0
+AUTONB=0
+
+if [ ! -f $VIEWER ];then
+	make -C $VIEWERPATH
+fi
+
+if [[ $# == 0 ]]; then
+	AUTONB=1
+fi
 
 if [[ "$@" =~ '--help' ]]
 then
@@ -40,23 +50,23 @@ fi
 while [[ $#>0 ]]; do
 	case "$1" in 
 			'-s'|'--size')
-					FOUND=1
+					AUTONB=1
 					SIZE=$2
 					shift 2
 					continue
 			;;
 			'-M'|'--max')
-					FOUND=1
+					AUTONB=1
 					MAX=$2
 					shift 2
 					continue
 			;;	'-m'|'--min')
-					FOUND=1
+					AUTONB=1
 					MIN=$2
 					shift 2
 					continue
 			;;	'-c'|'--copies')
-					FOUND=1
+					AUTONB=1
 					UNIQUE=0
 					shift
 					continue
@@ -69,9 +79,9 @@ while [[ $#>0 ]]; do
 done
 
 echo "$@"
-if [[ $FOUND == 0 ]]
+if [[ $AUTONB == 0 ]]
 then
-$EXEC $@ | ./psvis $@
+$EXEC $@ | $VIEWER $@
 else
 
 if [[ $MIN > $MAX ]]
@@ -98,5 +108,5 @@ do
 	fi
 	SIZE=$(($SIZE-1))
 done
-$EXEC $ARGS | ./psvis $ARGS
+$EXEC $ARGS | $VIEWER $ARGS
 fi
