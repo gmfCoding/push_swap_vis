@@ -14,6 +14,13 @@ struct s_program
 	int	height;
 	char	*name;
 	int	line_height;
+	int max;
+	int min;
+	int logfd;
+
+	int paused;
+	int step;
+
 	t_texture tex_a;
 	t_texture tex_b;
 	t_sort *sort;

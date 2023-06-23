@@ -1,6 +1,9 @@
 EXEC=./push_swap
 VIEWERPATH=./psvisdata
 VIEWER=$VIEWERPATH/psvis
+LOG=./psvisdata/operations.log
+ARGLOG=./psvisdata/args.log
+RAND=./psvisdata/rand
 
 MIN=-50
 MAX=50
@@ -8,6 +11,11 @@ SIZE=100
 UNIQUE=1
 
 AUTONB=0
+if [ ! -f $RAND ]; then
+	cc $RAND.c -o $RAND
+	chmod u+x rand
+fi
+
 
 if [ ! -f $VIEWER ];then
 	make -C $VIEWERPATH
@@ -40,11 +48,7 @@ then
 	-e --exec
 		file path to the push_swap executable.
 	")
-else
-	if [[ "$@" =~ '--size' ]]
-	then
-		MIN=$1
-	fi
+	exit;
 fi
 
 while [[ $#>0 ]]; do
@@ -78,35 +82,51 @@ while [[ $#>0 ]]; do
 	break
 done
 
-echo "$@"
 if [[ $AUTONB == 0 ]]
 then
-$EXEC $@ | $VIEWER $@
+ARGS="$@"
 else
 
-if [[ $MIN > $MAX ]]
-then
-	echo "Min is greater than max, switching!"
-		TEMPNB=$MIN
-	MIN=$MAX
-	MAX=$TEMPNB
-fi
+#if [[ $MIN > $MAX ]]
+#then
+#	echo "Min is greater than max, switching!"
+#		TEMPNB=$MIN
+#	MIN=$MAX
+#	MAX=$TEMPNB
+#fi 
 
-if [[ $SIZE > $(($MAX-$MIN)) ]]
-then
-	echo "Size is greater than the range, extending the range!"
-	SIZE=$(($MAX-$MIN))
-	MIN=$(($SIZE/-2))
-	MAX=$(($SIZE/2))
-fi
+#if [[ $SIZE > $(($MAX-$MIN)) ]]
+#then
+#	echo "Size is greater than the range, extending the range!"
+#	SIZE=$(($MAX-$MIN))
+#	MIN=$(($SIZE/-2))
+#	MAX=$(($SIZE/2))
+#fi
+#
+#while [[ $SIZE > 0 ]]
+#do
+#	VAL=$(awk -v min=$MIN -v max=$MAX -v seed=$RANDOM 'BEGIN{srand(seed+0); print int(min+rand()*(max-min+1))}') 
+#	if [[ $ARGS =~ (^|[[:space:]])$VAL($|[[:space:]]) ]]; then
+#			continue;
+#	else
+#		ARGS="$ARGS $VAL"
+#	fi
+#	SIZE=$(($SIZE-1))
+#done
 
-while [[ $SIZE > 0 ]]
-do
-	VAL=$(awk -v min=$MIN -v max=$MAX -v seed=$RANDOM 'BEGIN{srand(seed+0); print int(min+rand()*(max-min+1))}') 
-	if ! [[ ARGS =~ VAL ]];then
-		ARGS="$ARGS $VAL"
-	fi
-	SIZE=$(($SIZE-1))
-done
+
+RANDARGS="--m $MIN --M $MAX --count $SIZE"
+if [[ $UNIQUE == 1 ]]; then
+	RANDARGS="$RANDARGS --allow-copies"
+fi
+echo "$ARGS"
+
+ARGS=$($RAND $RANDARGS)
+
+echo "$ARGS"
+#$EXEC $ARGS > $LOG
+#$VIEWER $LOG $ARGS
+fi
+echo "$ARGS"
+#> $ARGLOG
 $EXEC $ARGS | $VIEWER $ARGS
-fi

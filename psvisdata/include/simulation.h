@@ -2,15 +2,17 @@
 
 typedef enum e_sop
 {
+	ERR = 0,
 	PA,
 	PB,
 	SA,
 	SB,
 	SS,
 	RA,
+	RRA,
 	RB,
-	RRR,
-	ERR
+	RRB,
+	RRR
 }			t_sop;
 
 t_sop get_operation(char *op);
