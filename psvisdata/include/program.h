@@ -1,5 +1,5 @@
 #ifndef PROGRAM_H
-# define PROGRAM_G
+# define PROGRAM_H
 #include "sort.h"
 #include "texture.h"
 

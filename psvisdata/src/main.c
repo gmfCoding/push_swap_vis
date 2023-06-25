@@ -211,10 +211,9 @@ int on_input(int key, t_program *pg)
 {
 	if (key == KEY_P)
 		pg->paused = !pg->paused;
-	ft_printf("%d:%d\n", KEY_SPACE, key);
 	if (key == KEY_ESC)
 		exit(0);
-	if (key == KEY_SPACE)
+	if (key == KEY_SPACE
 		pg->step = 1;
 	return 0;
 }
