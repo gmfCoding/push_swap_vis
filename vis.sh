@@ -9,8 +9,9 @@ MIN=-50
 MAX=50
 SIZE=100
 UNIQUE=1
-
+HEADLESS=0
 AUTONB=0
+
 if [ ! -f $RAND ]; then
 	cc $RAND.c -o $RAND
 	chmod u+x rand
@@ -47,6 +48,9 @@ then
 	
 	-e --exec
 		file path to the push_swap executable.
+	
+	-h --headless
+		runs push_swap without the visualiser.
 	")
 	exit;
 fi
@@ -77,6 +81,10 @@ while [[ $#>0 ]]; do
 			;;	'-e'|'--exec')
 					EXEC=$2
 					shift 2
+					continue
+			;;	'-h'|'--headless')
+					HEADLESS=1
+					shift
 					continue
 	esac
 	break
@@ -129,4 +137,8 @@ echo "$ARGS"
 fi
 echo "$ARGS"
 #> $ARGLOG
-$EXEC $ARGS | $VIEWER $ARGS
+if [[ $HEADLESS == 1 ]]; then
+	$EXEC $ARGS
+else
+	$EXEC $ARGS | $VIEWER $ARGS
+fi

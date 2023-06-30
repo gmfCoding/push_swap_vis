@@ -21,6 +21,8 @@ struct s_program
 	int paused;
 	int step;
 
+	int op_per_frame;
+
 	t_texture tex_a;
 	t_texture tex_b;
 	t_sort *sort;

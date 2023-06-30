@@ -181,28 +181,44 @@ void render_stacks(t_program *program)
 }
 
 
+int apply_push_swap_commands(t_program *program)
+{
+	int ops = 0;
+	
+	while (ops < program->op_per_frame)
+	{
+		if (program->paused && !program->step)
+			return 0;
+		program->step = 0;
+		char *op = get_next_line(0);
+		if (op == NULL)
+			return 0;
+		t_sop sop = get_operation(op);
+		apply_operation(program->sort, sop);
+		free(op);
+		if (sop == ERR)
+			continue ;
+		if (program->paused)
+			break ;
+		ops++;
+	}
+	return (1);
+}
+
 int	update(t_program *program)
 {
-	// Return from the function if we are paused 
-	// and we have not asked for a single operation step
-	//ft_printf("%d", program->step);
-	if (program->paused && !program->step)
-		   return 0;
-	program->step = 0;
-	
-	char *op = get_next_line(0);
-	if (op == NULL)
-		return 0;
-	t_sop sop = get_operation(op);
-	apply_operation(program->sort, sop);
-	free(op);
-	if (sop == ERR)
-		return 0;
-//	stn_print(program->sort);	
-	render_stacks(program);
+	if (apply_push_swap_commands(program))
+			render_stacks(program);
 	char *str = ft_itoa(program->sort->op_counter);
 	mlx_string_put(program->mlx, program->win, 50, 50, 0xFFFFFFFF, str);
 	free(str);
+	char *str2 = ft_itoa(program->op_per_frame);
+	str = ft_strjoin("op / f:  ", str2);
+	free(str2);
+	mlx_string_put(program->mlx, program->win, 5, program->height - 63, 0xFFFFFFF, str);
+	free(str);
+	if (program->paused)
+		mlx_string_put(program->mlx, program->win, 5, program->height - 50, 0xFFFFFFFF, "Paused");
 	return (0);
 }
 
@@ -213,7 +229,7 @@ int on_input(int key, t_program *pg)
 		pg->paused = !pg->paused;
 	if (key == KEY_ESC)
 		exit(0);
-	if (key == KEY_SPACE
+	if (key == KEY_SPACE)
 		pg->step = 1;
 	return 0;
 }
@@ -230,7 +246,7 @@ int	main(int argc, char **argv)
 	prog.width = 1000;
 	prog.height = 1000;
 	prog.name = "PUSH SWAP VISUALISER";
-	prog.line_height = 1;
+	prog.line_height = 9;
 	prog.mlx = mlx_init();
 	if (argc == 1)
 		return (-1);
@@ -240,6 +256,7 @@ int	main(int argc, char **argv)
 	prog.sort->a = st_new("a");
 	prog.sort->b = st_new("b");
 	parse(prog.sort, argc, argv);
+	prog.op_per_frame = 3;
 	prog.paused = 1;
 	prog.max = ft_max(stack_get_max(prog.sort->a), stack_get_max(prog.sort->b));
 	prog.min = ft_min(stack_get_min(prog.sort->a), stack_get_min(prog.sort->b));
