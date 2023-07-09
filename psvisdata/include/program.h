@@ -21,7 +21,7 @@ struct s_program
 	int paused;
 	int step;
 
-	int op_per_frame;
+	int speed;
 
 	t_texture tex_a;
 	t_texture tex_b;

@@ -11,6 +11,7 @@ SIZE=100
 UNIQUE=1
 HEADLESS=0
 AUTONB=0
+CUSTSEED=0
 
 if [ ! -f $RAND ]; then
 	cc $RAND.c -o $RAND
@@ -29,7 +30,7 @@ fi
 if [[ "$@" =~ '--help' ]]
 then
 	(echo -e "Push swap visualiser:
-	./psvis.sh [-hsmMce] [numbers...]
+	./psvis.sh [-hsmMsce] [numbers...]
 
 	--help
 		displays this help message.
@@ -46,6 +47,9 @@ then
 	-c --copies
    		allows multiple copies of the same number.
 	
+	-d --seed
+		seed to use to generate random numbres.
+
 	-e --exec
 		file path to the push_swap executable.
 	
@@ -57,13 +61,12 @@ fi
 
 while [[ $#>0 ]]; do
 	case "$1" in 
-			'-s'|'--size')
+				'-s'|'--size')
 					AUTONB=1
 					SIZE=$2
 					shift 2
 					continue
-			;;
-			'-M'|'--max')
+			;;	'-M'|'--max')
 					AUTONB=1
 					MAX=$2
 					shift 2
@@ -77,6 +80,11 @@ while [[ $#>0 ]]; do
 					AUTONB=1
 					UNIQUE=0
 					shift
+					continue
+			;;	'-d'|'--seed')
+					CUSTSEED=1
+					SEED=$2
+					shift 2
 					continue
 			;;	'-e'|'--exec')
 					EXEC=$2
@@ -95,40 +103,16 @@ then
 ARGS="$@"
 else
 
-#if [[ $MIN > $MAX ]]
-#then
-#	echo "Min is greater than max, switching!"
-#		TEMPNB=$MIN
-#	MIN=$MAX
-#	MAX=$TEMPNB
-#fi 
-
-#if [[ $SIZE > $(($MAX-$MIN)) ]]
-#then
-#	echo "Size is greater than the range, extending the range!"
-#	SIZE=$(($MAX-$MIN))
-#	MIN=$(($SIZE/-2))
-#	MAX=$(($SIZE/2))
-#fi
-#
-#while [[ $SIZE > 0 ]]
-#do
-#	VAL=$(awk -v min=$MIN -v max=$MAX -v seed=$RANDOM 'BEGIN{srand(seed+0); print int(min+rand()*(max-min+1))}') 
-#	if [[ $ARGS =~ (^|[[:space:]])$VAL($|[[:space:]]) ]]; then
-#			continue;
-#	else
-#		ARGS="$ARGS $VAL"
-#	fi
-#	SIZE=$(($SIZE-1))
-#done
-
-
 RANDARGS="--m $MIN --M $MAX --count $SIZE"
 if [[ $UNIQUE == 1 ]]; then
 	RANDARGS="$RANDARGS --allow-copies"
 fi
-echo "$ARGS"
 
+if [[ $CUSTSEED == 1 ]]; then
+	RANDARGS="$RANDARGS --seed $SEED"
+fi
+
+echo "$ARGS"
 ARGS=$($RAND $RANDARGS)
 
 echo "$ARGS"

@@ -13,6 +13,7 @@
 #include "simulation.h"
 #include <fcntl.h>
 
+#include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
 
@@ -181,15 +182,31 @@ void render_stacks(t_program *program)
 }
 
 
+int convert_speed(int speed)
+{
+	if (speed < 0)
+	{
+		return (speed * speed / 4 * 62500);
+	}
+	return speed;
+}
+
 int apply_push_swap_commands(t_program *program)
 {
 	int ops = 0;
-	
-	while (ops < program->op_per_frame)
+	int do_op;
+	int speed = convert_speed(program->speed);
+	if (program->speed >= 0)
+		do_op = speed;
+	else
 	{
-		if (program->paused && !program->step)
+		do_op = 1;
+		usleep(speed);
+	}
+	if (do_op == 0 || (program->paused && !program->step))
 			return 0;
-		program->step = 0;
+	while (ops < do_op)
+	{
 		char *op = get_next_line(0);
 		if (op == NULL)
 			return 0;
@@ -202,6 +219,7 @@ int apply_push_swap_commands(t_program *program)
 			break ;
 		ops++;
 	}
+	program->step = 0;
 	return (1);
 }
 
@@ -212,12 +230,24 @@ int	update(t_program *program)
 	char *str = ft_itoa(program->sort->op_counter);
 	mlx_string_put(program->mlx, program->win, 50, 50, 0xFFFFFFFF, str);
 	free(str);
-	char *str2 = ft_itoa(program->op_per_frame);
-	str = ft_strjoin("op / f:  ", str2);
-	free(str2);
+	/*if (program->speed >= 0)
+	{
+		char *str2 = ft_itoa(convert_speed(program->speed));
+		str = ft_strjoin("op / f:  ", str2);
+		free(str2);
+	}
+	else
+	{
+		float amount = 1.0f / convert_speed(program->speed) / 1000000.0f; 	
+		int len = snprintf(NULL, 0, "%f", amount);
+		char *str2 = malloc(len + 1);
+		snprintf(str2, len + 1, "%f", amount);
+		str = ft_strjoin("op / s: ", str2);
+		free(str2);
+	}
 	mlx_string_put(program->mlx, program->win, 5, program->height - 63, 0xFFFFFFF, str);
 	free(str);
-	if (program->paused)
+	*/if (program->paused)
 		mlx_string_put(program->mlx, program->win, 5, program->height - 50, 0xFFFFFFFF, "Paused");
 	return (0);
 }
@@ -231,6 +261,10 @@ int on_input(int key, t_program *pg)
 		exit(0);
 	if (key == KEY_SPACE)
 		pg->step = 1;
+	if (key == KEY_LSHIFT)
+		pg->speed++;
+	if (key == KEY_LCTRL)
+		pg->speed--;
 	return 0;
 }
 
@@ -256,7 +290,7 @@ int	main(int argc, char **argv)
 	prog.sort->a = st_new("a");
 	prog.sort->b = st_new("b");
 	parse(prog.sort, argc, argv);
-	prog.op_per_frame = 3;
+	prog.speed = 3;
 	prog.paused = 1;
 	prog.max = ft_max(stack_get_max(prog.sort->a), stack_get_max(prog.sort->b));
 	prog.min = ft_min(stack_get_min(prog.sort->a), stack_get_min(prog.sort->b));
