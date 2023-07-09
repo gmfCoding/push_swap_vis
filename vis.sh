@@ -5,26 +5,25 @@ LOG=./psvisdata/operations.log
 ARGLOG=./psvisdata/args.log
 RAND=./psvisdata/rand
 
+# Default values
 MIN=-50
 MAX=50
 SIZE=100
-UNIQUE=1
+UNIQUE=0
 HEADLESS=0
-AUTONB=0
+AUTONB=1
 CUSTSEED=0
+set -x
 
+# Compile rand utility
 if [ ! -f $RAND ]; then
 	cc $RAND.c -o $RAND
 	chmod u+x rand
 fi
 
-
+# Compile visualiser
 if [ ! -f $VIEWER ];then
 	make -C $VIEWERPATH
-fi
-
-if [[ $# == 0 ]]; then
-	AUTONB=1
 fi
 
 if [[ "$@" =~ '--help' ]]
@@ -59,26 +58,23 @@ then
 	exit;
 fi
 
+# Parse command line arguments
 while [[ $#>0 ]]; do
 	case "$1" in 
 				'-s'|'--size')
-					AUTONB=1
 					SIZE=$2
 					shift 2
 					continue
 			;;	'-M'|'--max')
-					AUTONB=1
 					MAX=$2
 					shift 2
 					continue
 			;;	'-m'|'--min')
-					AUTONB=1
 					MIN=$2
 					shift 2
 					continue
 			;;	'-c'|'--copies')
-					AUTONB=1
-					UNIQUE=0
+					UNIQUE=1
 					shift
 					continue
 			;;	'-d'|'--seed')
@@ -94,33 +90,37 @@ while [[ $#>0 ]]; do
 					HEADLESS=1
 					shift
 					continue
+			;; '-v'|'--verbose')
+					VERBOSE=1
+					shift
+					continue;
 	esac
 	break
 done
 
-if [[ $AUTONB == 0 ]]
-then
-ARGS="$@"
-else
-
-RANDARGS="--m $MIN --M $MAX --count $SIZE"
-if [[ $UNIQUE == 1 ]]; then
-	RANDARGS="$RANDARGS --allow-copies"
+# If there are remaining arguments we won't use auto number (random numbers)
+if [[ $# != 0 ]]; then
+	AUTONB=0
 fi
+
+# Assume arguments are numbers, otherwise overwrite if AUTONB.
+ARGS="$@"
+if [[ $AUTONB == 1 ]]; then
+##### GENERATE RANDOM NUMBERS #####
+
+## Arguments to use with our custom rand utility.
+RANDARGS="--m $MIN --M $MAX --count $SIZE"
+
+if [[ $UNIQUE == 1 ]]; then
+	RANDARGS="$RANDARGS --allow-copies"; fi
 
 if [[ $CUSTSEED == 1 ]]; then
-	RANDARGS="$RANDARGS --seed $SEED"
-fi
+	RANDARGS="$RANDARGS --seed $SEED"; fi
 
-echo "$ARGS"
+# Get the randomly generated values from our rand utility.
 ARGS=$($RAND $RANDARGS)
-
-echo "$ARGS"
-#$EXEC $ARGS > $LOG
-#$VIEWER $LOG $ARGS
 fi
-echo "$ARGS"
-#> $ARGLOG
+
 if [[ $HEADLESS == 1 ]]; then
 	$EXEC $ARGS
 else
