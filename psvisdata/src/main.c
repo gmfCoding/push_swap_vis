@@ -16,6 +16,49 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
+
+int	ft_clamp(int value, int min, int max)
+{
+	if (value > max)
+		return (max);
+	else if (value < min)
+		return (min);
+	return (value);
+}
+
+char* ftoa(float amount)
+{
+	int len = snprintf(NULL, 0, "%f", amount);
+	char *str2 = malloc(len + 1);
+	snprintf(str2, len + 1, "%f", amount);
+	return (str2);
+}
+
+char* ft_strnjoin(int count, ...)
+{
+	int i;
+   	int len;
+	va_list ap;
+	char *str;
+
+	i = 0;
+	len = 0;
+	va_start(ap, count);
+	while (i < count)
+	{
+		len += strlen(va_arg(ap, char *)); 
+		i++;
+	}
+	va_start(ap, count);
+	str = calloc(1, len + 1);
+	while (count > 0)
+	{
+		strcat(str, va_arg(ap, char *));
+		count--;
+	}
+	return (str);
+}
 
 void	stn_print(t_sort *sort)
 {
@@ -172,37 +215,36 @@ int stack_get_max(t_stack *stack)
 	return (min);
 }
 
-void render_stacks(t_program *program)
+void render_stacks(t_program *program, int update)
 {
-	mlx_clear_window(program->mlx, program->win);
-	tex_draw_stack(program, program->tex_a, program->sort->a);
-	tex_draw_stack(program, program->tex_b, program->sort->b);
+	static int force_update = 0;
+	force_update++;
+	if (update || program->force_update || force_update % 75 == 0)
+	{
+		force_update = 1;
+		program->force_update = 0;
+		tex_draw_stack(program, program->tex_a, program->sort->a);
+		tex_draw_stack(program, program->tex_b, program->sort->b);
+	}
 	push_tex(program, program->tex_a, vnew(0,0));
 	push_tex(program, program->tex_b, vnew(program->width / 2, 0));	
 }
 
-
-int convert_speed(int speed)
+double op_per_second(int speed)
 {
-	if (speed < 0)
-	{
-		return (speed * speed / 4 * 62500);
-	}
-	return speed;
+	const double speeds[] = {0, 0.1, 0.33333, 0.4, 0.5, 0.66666, 1.0, 2.0, 2.5, 5, 10, 15, 20, 25, 30, 50, 100, 150, 200, 300, 500 };
+		
+	return (speeds[speed]);
 }
 
 int apply_push_swap_commands(t_program *program)
 {
 	int ops = 0;
-	int do_op;
-	int speed = convert_speed(program->speed);
-	if (program->speed >= 0)
-		do_op = speed;
-	else
-	{
-		do_op = 1;
-		usleep(speed);
-	}
+	int do_op = 1;
+
+	t_wait_update(&program->timer);
+	if (t_wait_elapsed(&program->timer) < 1.0 / op_per_second(program->speed))
+		return 0;
 	if (do_op == 0 || (program->paused && !program->step))
 			return 0;
 	while (ops < do_op)
@@ -219,39 +261,45 @@ int apply_push_swap_commands(t_program *program)
 			break ;
 		ops++;
 	}
+	t_wait_restart(&program->timer);	
 	program->step = 0;
 	return (1);
 }
 
-int	update(t_program *program)
+void display_info(t_program *program)
 {
-	if (apply_push_swap_commands(program))
-			render_stacks(program);
 	char *str = ft_itoa(program->sort->op_counter);
 	mlx_string_put(program->mlx, program->win, 50, 50, 0xFFFFFFFF, str);
 	free(str);
-	/*if (program->speed >= 0)
-	{
-		char *str2 = ft_itoa(convert_speed(program->speed));
-		str = ft_strjoin("op / f:  ", str2);
-		free(str2);
+	if (op_per_second(program->speed) > 1.0)
+	{	
+		char *str_ops = ftoa(op_per_second(program->speed));
+		char *str_speed = ft_itoa(program->speed);
+		str = ft_strnjoin(5, "op / s:  ", str_ops, " (", str_speed, ")");
+		free(str_ops);
+		free(str_speed);
 	}
 	else
 	{
-		float amount = 1.0f / convert_speed(program->speed) / 1000000.0f; 	
-		int len = snprintf(NULL, 0, "%f", amount);
-		char *str2 = malloc(len + 1);
-		snprintf(str2, len + 1, "%f", amount);
-		str = ft_strjoin("op / s: ", str2);
-		free(str2);
+		char *str_ops = ftoa(1.0 / op_per_second(program->speed));
+		char *str_speed = ft_itoa(program->speed);
+		str = ft_strnjoin(5, "s / op:  ", str_ops, " (", str_speed, ")");
+		free(str_ops);
+		free(str_speed);
 	}
 	mlx_string_put(program->mlx, program->win, 5, program->height - 63, 0xFFFFFFF, str);
 	free(str);
-	*/if (program->paused)
+	if (program->paused)
 		mlx_string_put(program->mlx, program->win, 5, program->height - 50, 0xFFFFFFFF, "Paused");
-	return (0);
 }
 
+int	update(t_program *program)
+{
+	mlx_clear_window(program->mlx, program->win);
+	render_stacks(program, apply_push_swap_commands(program));
+	display_info(program);
+	return (0);
+}
 
 int on_input(int key, t_program *pg)
 {
@@ -261,10 +309,26 @@ int on_input(int key, t_program *pg)
 		exit(0);
 	if (key == KEY_SPACE)
 		pg->step = 1;
+	int speed = pg->speed;
 	if (key == KEY_LSHIFT)
 		pg->speed++;
 	if (key == KEY_LCTRL)
 		pg->speed--;
+	if (pg->speed < 0)
+		pg->speed = 0;
+	if (pg->speed > 20)
+		pg->speed = 20;
+	if (pg->speed != speed)
+		t_wait_create(&pg->timer, 1.0 / op_per_second(pg->speed));
+	int plh = pg->line_height;
+	if (key == KEY_PERIOD)
+		pg->line_height = ft_clamp(pg->line_height + 1, 1, 10);
+	if (key == KEY_COMMA)
+		pg->line_height = ft_clamp(pg->line_height - 1, 1, 10);
+	if (plh != pg->line_height)
+		pg->force_update = 1;
+	if (key == KEY_ENTER)
+		stn_print(pg->sort);
 	return 0;
 }
 
@@ -292,6 +356,7 @@ int	main(int argc, char **argv)
 	parse(prog.sort, argc, argv);
 	prog.speed = 3;
 	prog.paused = 1;
+	t_wait_create(&prog.timer, 1.0 / op_per_second(prog.speed));
 	prog.max = ft_max(stack_get_max(prog.sort->a), stack_get_max(prog.sort->b));
 	prog.min = ft_min(stack_get_min(prog.sort->a), stack_get_min(prog.sort->b));
 	prog.tex_a = create_texture(prog.mlx, prog.width / 2 - 10, prog.sort->a->count * prog.line_height);

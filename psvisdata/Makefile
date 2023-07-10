@@ -1,4 +1,4 @@
-SRCSF =	main.c simulation.c lst_readfd.c render_util.c vector.c vector_math.c vector_math_extra.c texture_util.c texture.c
+SRCSF =	main.c simulation.c wait.c lst_readfd.c render_util.c vector.c vector_math.c vector_math_extra.c texture_util.c texture.c
 
 OBJSF = $(patsubst %.c,%.o, $(SRCSF))
 

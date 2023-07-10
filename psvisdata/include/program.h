@@ -2,6 +2,7 @@
 # define PROGRAM_H
 #include "sort.h"
 #include "texture.h"
+#include "wait.h"
 
 typedef struct s_program t_program;
 
@@ -20,7 +21,10 @@ struct s_program
 
 	int paused;
 	int step;
+	
+	int force_update;
 
+	t_wait timer;
 	int speed;
 
 	t_texture tex_a;
