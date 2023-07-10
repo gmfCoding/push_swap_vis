@@ -39,7 +39,7 @@ char *get_arg(char *arg, int argc, char **argv)
 	return (NULL);
 }
 
-void print_random(int min, int max, int amount, int unique)
+void print_random(long long int min, long long int max, int amount, int unique)
 {
 	int numbers[amount];
 	memset(numbers, 0, amount * sizeof(int));
@@ -53,7 +53,7 @@ void print_random(int min, int max, int amount, int unique)
 		max = tmp;
 	}
 
-	if (unique && amount > (max - min))
+	if (unique && amount >= (max - min))
 	{
 		int diff = amount - (max - min);
 		max += (diff/2) + 1;
@@ -62,10 +62,11 @@ void print_random(int min, int max, int amount, int unique)
 
 	while (i < amount)
 	{
-		numbers[i] = rand() % (min - max) + max;	
+		numbers[i] = rand() % (min - max + 1) + min;	
 		int j = 0;
 		int skip = 0;
 		while (unique && j < i)
+		// printf("!%s", op);
 		{
 			if (numbers[j] == numbers[i])
 			{
@@ -98,6 +99,16 @@ void main(int argc, char **argv)
 		max = atoi(get_arg("--M", argc, argv));	
 	if (get_arg("--m", argc, argv))
 		min = atoi(get_arg("--m", argc, argv));
+		// printf("!%s", op);
+	if (get_arg("--ordered", argc, argv))
+	{
+		int i = 0;
+		while (i < size)
+		{
+			printf("%d ", min + i);
+			i++;
+		}
+	}
 	print_random(min, max, size, unique);
 }
 
